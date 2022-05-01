@@ -1,0 +1,3 @@
+hookfunction(game.HttpGet, function ()
+    return game.Players.LocalPlayer:Kick("Don't Execute Another Script After Executing This One")
+end)
