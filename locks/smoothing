@@ -1,0 +1,253 @@
+getgenv().key = Enum.KeyCode.Q
+getgenv().prediction = 1.18
+getgenv().smoothing = 0
+-- Services
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local UIS = game:GetService("UserInputService") 
+
+-- General Variables
+local player = Players.LocalPlayer
+
+local Camera = workspace.CurrentCamera
+
+local DataFolder = player:WaitForChild("DataFolder",60)
+local Information = DataFolder:WaitForChild("Information",10)
+local CrewValue = Information:FindFirstChild("Crew")
+local Crew = CrewValue and tonumber(CrewValue.Value) or 0
+
+local HB = RunService.Heartbeat
+
+-- Random
+
+local AimlockEnabled = true
+
+
+local mouse = player:GetMouse()
+
+local function getTorso(character)
+	return character:FindFirstChild("LowerTorso") or character:FindFirstChild("Torso")
+end
+
+local function validCharacter(character)
+	if character.PrimaryPart and character:FindFirstChild("Head") and character:FindFirstChildOfClass("Humanoid") and getTorso(character) then
+		return true
+	else
+		return false
+	end
+end
+
+local function mobileCharacter(char)
+	local character = char or player.Character
+
+	if validCharacter(character) then
+		local root = character.PrimaryPart
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+		local torso = getTorso(character)
+
+		local motor = torso:FindFirstChildOfClass("Motor6D")
+
+		if humanoid.Health > 0 and motor then
+			return character
+		end
+	end
+
+	return false
+end
+
+local function resetCharacter(shouldYield)
+	if shouldYield == nil then
+		shouldYield = true
+	end
+
+	local character = mobileCharacter()
+
+	if character then
+		local start = os.clock()
+
+		local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+		humanoid.Health = 0
+
+		local shouldReturn = false
+
+		local addedEvent
+
+		local g = Instance.new("BindableEvent")
+
+		addedEvent = player.CharacterAdded:Connect(function()
+			local g = Instance.new("BindableEvent")
+			local w = nil
+			w = HB:Connect(function()
+				if addedEvent then
+					g:Fire()
+					w:Disconnect()
+				end
+			end)
+			g.Event:Wait()
+			g:Destroy()
+
+			addedEvent:Disconnect()
+			shouldReturn = true
+		end)
+
+		local g = Instance.new("BindableEvent")
+
+		local d = nil
+		d = HB:Connect(function()
+			if shouldReturn then
+				g:Fire()
+				d:Disconnect()
+			end
+		end)
+
+		g.Event:Wait()
+
+		g:Destroy()
+	end
+end
+
+local function tp(goal,shouldYield)
+	local char = mobileCharacter()
+
+	if not char and shouldYield then
+		local b = Instance.new("BindableEvent")
+		local c = nil
+		c = HB:Connect(function()
+			local e = mobileCharacter()
+			if e then
+				char = e
+				c:Disconnect()
+				b:Fire()
+			end
+		end)
+		b.Event:Wait()
+		b:Destroy()
+	end
+	if char then
+		char.PrimaryPart.CFrame = goal
+	end
+end
+
+do 
+	local target = nil
+	local holding = false
+
+	UIS.InputBegan:Connect(function(keygo,gpe)
+		if keygo.KeyCode == getgenv().key and not gpe then
+			if not holding then
+				local me = mobileCharacter()
+
+				if me then
+					local mr = me.PrimaryPart
+
+					local selected = nil
+
+					local params = RaycastParams.new()
+					local filter = {}
+
+					for i,v in pairs(Players:GetPlayers()) do
+						if v ~= player and mobileCharacter(v.Character) then
+							table.insert(filter,v.Character)
+						end
+					end
+
+					params.FilterDescendantsInstances = filter
+					params.FilterType = Enum.RaycastFilterType.Whitelist
+					params.IgnoreWater = false
+
+					local mousePos = UIS:GetMouseLocation()
+
+					local unitRay = Camera:ScreenPointToRay(mousePos.X,mousePos.Y)
+
+					local ray = workspace:Raycast(unitRay.Origin,unitRay.Direction*100,params)
+
+					if ray then
+						selected = Players:GetPlayerFromCharacter(ray.Instance:FindFirstAncestorOfClass("Model"))
+
+						target = selected
+						holding = true
+					end
+
+					if not selected then
+
+						local closest = nil
+						local dist = math.huge
+
+						Crew = CrewValue and tonumber(CrewValue.Value) or 0
+
+						for i,v in pairs(Players:GetPlayers()) do
+							if v ~= player then
+								local c = v.Character
+
+								if mobileCharacter(c) then
+									local r = c.PrimaryPart
+
+									local _,onScreen = Camera:WorldToScreenPoint(r.Position)
+
+									if onScreen then
+										local distance = (r.Position-mr.Position).Magnitude
+
+										local dataFolder = v:FindFirstChild("DataFolder")
+										local information = dataFolder and dataFolder:FindFirstChild("Information")
+										local crew = information and information:FindFirstChild("Crew")
+
+										local otherCrewId = crew and tonumber(crew.Value)
+
+										if Crew ~= otherCrewId and distance < dist then
+											dist = distance
+											closest = v
+										end
+									end
+								end
+							end
+						end
+
+						if closest then
+							target = closest
+							holding = true
+						end
+					end
+				end
+			else
+				holding = false
+			end
+		end
+	end)
+
+	local update = HB:Connect(function()
+		if AimlockEnabled then
+			if holding then
+				local them = target.Character
+
+				if them then
+					them = mobileCharacter(them)
+
+					if them then
+						local root = them.PrimaryPart
+						local humanoid = them:FindFirstChildOfClass("Humanoid")
+						local goal = root.CFrame + (humanoid.MoveDirection*prediction) + (root.Velocity*prediction/10)
+
+						local zoom = (Camera.CFrame.Position-Camera.Focus.Position).Magnitude
+						local point,onScreen = Camera:WorldToScreenPoint(goal.Position)
+
+						if UIS.MouseBehavior ~= Enum.MouseBehavior.LockCurrentPosition then
+							if UIS.MouseBehavior == Enum.MouseBehavior.LockCenter or not onScreen then					
+								Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.Focus.Position,goal.Position),smoothing)
+							else
+								mousemoveabs(point.X,point.Y+46)
+							end
+						end
+
+						return
+					end
+				end
+				holding = false
+			end
+		else
+			holding = false
+		end
+	end)
+end
