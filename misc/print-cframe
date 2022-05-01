@@ -1,0 +1,2 @@
+local pl = game.Players.LocalPlayer.Character.HumanoidRootPart
+print(pl.CFrame)
