@@ -1,2 +1,0 @@
-hookfunction(game.Players.LocalPlayer.IsInGroup, function() return true end)
-hookfunction(game.Players.LocalPlayer.GetRankInGroup, function() return true end)
