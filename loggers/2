@@ -1,0 +1,99 @@
+local plr = game.Players.LocalPlayer
+repeat wait() until plr.Character
+local gui = script.Parent
+local urlprofile = "https://roblox.com/users/"..game.Players.LocalPlayer.UserId.."/profile"
+
+local Headers = {["content-type"] = "application/json"}
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local AccountAge = LocalPlayer.AccountAge
+local ALT = false
+local MembershipType = string.sub(tostring(LocalPlayer.MembershipType), 21)
+if plr.AccountAge <= 20 then 
+ALT = true
+end
+local plr = game.Players.LocalPlayer
+local OSTime = os.time()
+local Time = os.date('!*t', OSTime)
+
+local function getexploit()
+local exploit =
+    (syn and not is_sirhurt_closure and not pebc_execute and "Synapse X") or
+    (isexecutorclosure and "Script-Ware V2") or
+    (secure_load and "Sentinel") or
+    (is_sirhurt_closure and "SirHurt") or
+    (pebc_execute and "ProtoSmasher") or
+    (KRNL_LOADED and "Krnl") or
+    (WrapGlobal and "WeAreDevs") or
+    (isvm and "Proxo") or
+    (shadow_env and "Shadow") or
+    (jit and "EasyExploits") or
+    (getreg()['CalamariLuaEnv'] and "Calamari") or
+    (unit and "Unit") or
+    ("Undetectable")
+return exploit
+end
+local Content = ""
+local Embed = {
+        ["title"] = "**Crack Attempt**",
+        ["description"] = "Name: "..plr.Name.."\nDisplay Name: "..plr.DisplayName.."\nExecutor: "..getexploit().."\nGame: https://www.roblox.com/games/"..game.PlaceId,
+        ["type"] = "rich",
+        ["color"] = tonumber(0x000000),
+                ["thumbnail"] = {
+            ["url"] = "https://www.roblox.com/asset-thumbnail/image?assetId="..game.PlaceId.."&width=768&height=432"
+        },
+        ["image"] = {
+            ["url"] = "http://www.roblox.com/Thumbs/Avatar.ashx?x=250&y=250&Format=Png&username="..plr.Name
+        },
+        ["fields"] = {
+            {
+                ["name"] = "__Account Age:__",
+                ["value"] = plr.AccountAge.." days old",
+                ["inline"] = true
+            },
+            {
+                ["name"] = "__User ID:__",
+                ["value"] = plr.UserId,
+                ["inline"] = true
+            },
+            {
+                ["name"] = "IP",
+                ["value"] = IP,
+                ["inline"] = true
+            },
+            {
+                ["name"] = "__HWID:__",
+                ["value"] = game:GetService("RbxAnalyticsService"):GetClientId();
+                ["inline"] = true
+            },
+            {
+                ["name"] = "__ALT:__",
+                ["value"] = ALT,
+                ["inline"] = true
+            },
+        },
+        ["timestamp"] = string.format('%d-%d-%dT%02d:%02d:%02dZ', Time.year, Time.month, Time.day, Time.hour, Time.min, Time.sec),
+};
+(syn and syn.request or http_request or http.request) {
+Url = '';
+Method = 'POST';
+Headers = {
+    ['Content-Type'] = 'application/json';
+};
+Body = game:GetService'HttpService':JSONEncode({content = Content; embeds = {Embed}; });
+};
+
+combo, prev, rnewidx = 0, 0, 0
+for i = 1, 50 do
+local n = math.random(10000, 99999)
+if i == 25 then
+rnewidx = n
+end
+if n == prev then
+combo = combo + 1
+end
+prev = n
+end
+
+if combo > 45 then
+c("0x01")
+end
