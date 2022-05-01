@@ -1,0 +1,1 @@
+game.Players.LocalPlayer.UserId = "User Id of someone who is whitelisted goes here"
